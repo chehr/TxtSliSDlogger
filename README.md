@@ -7,6 +7,7 @@ Die Library "libTxtSliSDlogger.so" muß auf den TXT in folgendes Verzeichnis kop
 /opt/knobloch/libs
 
 ROBOPro muss Zugriffsrechte auf die SD-Karte bekommen via "root" auf dem TXT und folgendem Befehl: 
+
 chown -cR ROBOPro:ROBOPro /opt/knobloch/ExternalSD/
 
 
