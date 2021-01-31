@@ -1,15 +1,25 @@
 # TxtSliSDlogger
 fischtertechnik ROBOPro TXT Data logger to SD-Card
 
-Source code um Daten von ROBOPro auf die TXT SD-Karte zu loggen bzw speichern.
+Quellcode um Daten von ROBOPro auf die TXT SD-Karte zu loggen.
 
-Die Library "libTxtSliSDlogger.so" muß auf den TXT in folgendes Verzeichnis kopiert werden: 
+
+Installation der Bibliothek
+
+Am TXT müssen folgende Einstellungen aktiviert werden:
+- Einstellungen / WLAN 
+- Sicherheit / BootSD, SSH Deamon und WEB-Server müssen eingeschaltet sein
+
+Die Bibliothek "libTxtSliSDlogger.so" muß auf dem TXT in folgendes Verzeichnis kopiert werden: 
 /opt/knobloch/libs
+Die Bibliothek kann entweder via FTP, z.b. "FileZilla" oder via Web Browser erfolgen.
+
+
 
 ROBOPro muss Zugriffsrechte auf die SD-Karte bekommen via "root" auf dem TXT und folgendem Befehl: 
 
 chown -cR ROBOPro:ROBOPro /opt/knobloch/ExternalSD/
 
 
-Dann das Programm ROBOPro öffnen, anbei ein Beispiel:
+Dann das Programm lokal speichern und in ROBOPro öffnen, hier der Link:
 https://github.com/chehr/TxtSliSDlogger/blob/master/support/RoboPro/TxtSliSDlogger.rpp
