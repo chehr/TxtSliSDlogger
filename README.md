@@ -7,11 +7,11 @@ Quellcode um Daten von ROBOPro auf die TXT SD-Karte zu loggen.
 Installation der Bibliothek
 
 Am TXT müssen folgende Einstellungen aktiviert werden:
-- Einstellungen / WLAN 
-- Sicherheit / BootSD, SSH Deamon und WEB-Server müssen eingeschaltet sein
+1. Einstellungen / WLAN 
+2. Sicherheit / BootSD, SSH Deamon und WEB-Server müssen eingeschaltet sein
 
 Die Bibliothek "libTxtSliSDlogger.so" muß auf dem TXT in folgendes Verzeichnis kopiert werden: 
-/opt/knobloch/libs
+'/opt/knobloch/libs'
 Die Bibliothek kann entweder via FTP, z.b. "FileZilla" oder via Web Browser erfolgen.
 
 
