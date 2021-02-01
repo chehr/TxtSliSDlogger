@@ -27,4 +27,4 @@ Dann das Programm lokal speichern und in ROBOPro öffnen, hier der Link:
 [ROBOPro Programm Daten auf SD-Karte loggen](/support/RoboPro/)
 die ZIP Datei downloaden und entpacken.
 
-[ROBOPro Programm]("/support/RoboPro SD-Karte.png")
+[ROBOPro Programm](/support/RoboPro SD-Karte.png)
