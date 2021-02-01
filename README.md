@@ -14,7 +14,7 @@ Die Bibliothek "libTxtSliSDlogger.so" muß auf dem TXT in folgendes Verzeichnis 
 ```
 /opt/knobloch/libs
 ```
-Die Bibliothek kann entweder via FTP, z.b. "FileZilla" oder via Web Browser erfolgen.
+Die Bibliothek kann entweder via FTP, z.b. "FileZilla" oder via [Web Browser](/support/Bibliothek.png) erfolgen.
 
 
 
@@ -24,4 +24,5 @@ chown -cR ROBOPro:ROBOPro /opt/knobloch/ExternalSD/
 ```
 
 Dann das Programm lokal speichern und in ROBOPro öffnen, hier der Link:
-https://github.com/chehr/TxtSliSDlogger/blob/master/support/RoboPro/TxtSliSDlogger.rpp
+[ROBOPro Programm Daten auf SD-Karte loggen](/support/RoboPro/)
+mit rechter Maustaste "Ziel speichern unter.."
