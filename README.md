@@ -24,4 +24,4 @@ chown -cR ROBOPro:ROBOPro /opt/knobloch/ExternalSD/
 ```
 
 Dann das Programm lokal speichern und in ROBOPro öffnen, hier der Link:
-https://github.com/chehr/TxtSliSDlogger/blob/master/support/RoboPro/TxtSliSDlogger.rpp
+[ROBOPro Programm Daten auf SD-Karte loggen](/support/RoboPro/)
