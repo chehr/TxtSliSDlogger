@@ -27,4 +27,4 @@ Dann das Programm lokal speichern und in ROBOPro öffnen, hier der Link:
 [ROBOPro Programm Daten auf SD-Karte loggen](/support/RoboPro/)
 die ZIP Datei downloaden und entpacken.
 
-[ROBOPro Programm](https://github.com/chehr/TxtSliSDlogger/blob/master/support/RoboPro%20SD-Karte.png)
+[ROBOPro Programm](https://raw.githubusercontent.com/chehr/TxtSliSDlogger/master/support/RoboPro%SD-Karte.png)
