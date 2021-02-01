@@ -14,8 +14,8 @@ Die Bibliothek "libTxtSliSDlogger.so" muß auf dem TXT in folgendes Verzeichnis 
 ```
 /opt/knobloch/libs
 ```
-Die Bibliothek kann entweder via FTP, z.b. "FileZilla" oder via Web Browser erfolgen.
-[Web Browser](/support/Bibliothek.png)
+Die Bibliothek kann entweder via FTP, z.b. "FileZilla" oder via [Web Browser](/support/Bibliothek.png) erfolgen.
+
 
 
 ROBOPro muss Zugriffsrechte auf die SD-Karte bekommen via "root" auf dem TXT und folgendem Befehl: 
