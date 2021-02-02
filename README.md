@@ -25,4 +25,6 @@ chown -cR ROBOPro:ROBOPro /opt/knobloch/ExternalSD/
 
 Dann das Programm lokal speichern und in ROBOPro öffnen, hier der Link:
 [ROBOPro Programm Daten auf SD-Karte loggen](/support/RoboPro/)
-mit rechter Maustaste "Ziel speichern unter.."
+die ZIP Datei downloaden und entpacken.
+
+[ROBOPro Programm](/support/RoboPro SD-Karte.png)
