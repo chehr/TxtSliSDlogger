@@ -20,7 +20,7 @@
 #define __FT_SHMEM_H__
 
 //still the firmware number for the TX-C
-#define FIRMWARE_VER        0x011E      // firmware version is 1.30
+#define FIRMWARE_VER        0x4406      // TXT firmware 4.6.6
 
 
 #define IZ_COUNTER          4           // number of counter

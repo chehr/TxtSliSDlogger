@@ -20,6 +20,7 @@ TXT Data Logger to SD-Card Copyright(c) 30.01.2021 Christian Hehr
 #include <iostream>       // std::cout
 #include <cstring>
 #include <string>
+#include <unistd.h>         // for sleep()
 
 // Includes for the spdlog
 #include "spdlog/spdlog.h"
@@ -28,6 +29,9 @@ TXT Data Logger to SD-Card Copyright(c) 30.01.2021 Christian Hehr
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/async.h"
 
+//#include "TxtCamera.h" // TXT Camera
+//#include "TxtFactoryTypes.h"
+//#include "TxtSound.h"
 
 //static is optional, the variable will be created by the runtime when it loads the SLI.
 //Remark: The SLi is not unloaded when a RoboPro program has been terminated/stop.
@@ -35,9 +39,13 @@ static bool IsInit = false;      /*!< Set after initialization*/
 static bool IsStop = false;      /*!< Set after stop */
 
 static double value_d=0.0; 	/*!< Example of a global double variable */
+static double SupplyVoltage=0.0; 	/*!< global double variable of TXT SupplyVoltage */
+static short LogginON=0; 	/*!< Logging ON/OFF global short variable */
+static short SamplingRate=100; 	/*!< Default sampling rate [Hz] global short variable */
 static short value_s=0; 	/*!< Example of a global short variable */
 
-
+//int mleds = 0;
+//#define TIMEOUT_CONNECTION_MS 60000 //60 s
 
 /*!
   \brief spdlog globals, two loggers.
@@ -46,8 +54,6 @@ static std::shared_ptr<spdlog::logger> console = nullptr;      /*!< spdlogger */
 //spdlog::rotating_logger_mt<spdlog::async_factory>("console", "Data/SliCon.log", 248576 * 1, 8,true);
 static std::shared_ptr<spdlog::logger> file_logger = nullptr; /*!< spdlogger */
 //spdlog::rotating_logger_mt<spdlog::async_factory>("file_logger", "Data/SliLogr.log", 248576 * 1, 8,true);
-
-
 
 
 extern "C" {
@@ -119,7 +125,7 @@ int  getInitSpdLogShort(short *t) {
 			std::cout << "############console flush "	<< std::endl;
 			console ->flush();
 		}
-		spdlog::set_pattern("[%t] [%Y-%m-%d %T.%f %i] %v ");
+		spdlog::set_pattern("%t; %d-%m-%Y; %T.%f; %i; %v; ");
 		// spdlog::set_pattern("[thread %t][%Y-%m-%d %T.%e][%L](%^%@%$ %!) %v");
 		//spdlog::get("console")->set_pattern("####[%t %T.%e][%L][%^%@:%!%$] %v");
 		spdlog::set_level(spdlog::level::trace);
@@ -130,7 +136,7 @@ int  getInitSpdLogShort(short *t) {
 		value_s = 3; // Error code 3, No SD-Card included
 		return -2;
 	}
-	SPDLOG_LOGGER_INFO(file_logger, "[Thread id] [Date and time microsec Elapsed time in microsec ] RoboPro floating value.");
+	SPDLOG_LOGGER_INFO(file_logger, "Thread id; Date; Time [us]; Elapsed time [us];  RoboPro floating value");
 	SPDLOG_LOGGER_INFO(console, "Initialization has been finished.");
 
 	*t = (short) 25;
@@ -140,10 +146,12 @@ int  getInitSpdLogShort(short *t) {
 
 int getFlushDropSpdLogShort(short *t) {
 	if (file_logger != nullptr) {
+		LogginON = 0; // Stop TXT Supply Voltage logging
 		SPDLOG_LOGGER_INFO(file_logger, "Flush.");
 		file_logger->flush();
 		std::cout << "############ flush file_logger " << std::endl;
 		value_s = 1; // No error, stopped by user
+		IsStop=true; // Stop Undervoltage Alarm
 	} else
 		std::cout << "############ no file_logger " << std::endl;
 	if (console != nullptr) {
@@ -181,35 +189,117 @@ int setValueDouble(double data_FP48) {
 	SPDLOG_LOGGER_TRACE(file_logger, data_FP48);  // Daten auf SD-Karte loggen
 	return 0;
 }
-/*!
- * @brief set a global short value in the SLI
- * @param[in] v the value for value_s
- * @return  0: success,continuation by the workflow
- *          Other values error, continuation by the error workflow
- */
+
+// Receive sampling rate from ROBOPro (should be max 1000 Hz, default 100 Hz)
+int setSamplingRateShort(short Datenrate) {
+	if (!IsInit) {
+		SPDLOG_LOGGER_TRACE(file_logger,"SamplinRate -> not initialized" );
+		value_s = 2; // Error code 2, Init failed
+		return -1;
+	}
+	    FISH_X1_TRANSFER *pTArea;
+	    pTArea = GetKeLibTransferAreaMainAddress();
+	    if (pTArea!= nullptr) {
+	    SamplingRate = Datenrate;
+	    printf( "Sampling rate set: ", SamplingRate);
+	    }
+	else {
+	     SPDLOG_LOGGER_TRACE(file_logger, " No TA Main address \n");
+	     return -2;
+	    };
+	return 0;
+}
+
+
+
+// Sample TXT Supply Voltage to SD-Card with sampling rate as defined in "setSamplingRateShort"
+int setSupplyVoltageShort(short Schalter) {
+	if (!IsInit) {
+		SPDLOG_LOGGER_TRACE(file_logger,"Schalter -> not initialized" );
+		value_s = 2; // Error code 2, Init failed
+		return -1;
+	}
+
+	    FISH_X1_TRANSFER *pTArea;
+	    pTArea = GetKeLibTransferAreaMainAddress();
+	    if (pTArea!= nullptr) {
+	    	LogginON = Schalter;
+	    	while ((LogginON == 1) & (pTArea->sTxtInputs.u16TxtPower>0)) {
+	    		auto start = std::chrono::high_resolution_clock::now();
+	    		SupplyVoltage = (pTArea->sTxtInputs.u16TxtPower)*0.0009 + 1.5; // SupplyVoltage [V]
+	    		SPDLOG_LOGGER_TRACE(file_logger, SupplyVoltage);  // Daten auf SD-Karte loggen
+	    		auto end = std::chrono::high_resolution_clock::now();
+	    		double time_taken = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+	    		usleep(1000000/SamplingRate-time_taken/1000-216); // [us] 216us due to TXT approx time delay
+	    		//usleep(1000000/SamplingRate-216); // [us] 216us due to TXT approx time delay
+	    		//std::this_thread::sleep_for(std::chrono::milliseconds(1000/SamplingRate));
+	        }
+	    	printf( "TXT Supply voltage: %f \n", SupplyVoltage);
+	    	}
+	    else {
+	                 //SPDLOG_LOGGER_TRACE(file_logger, " No TA Main address!\n");
+	                 //or
+	                 SPDLOG_LOGGER_TRACE(file_logger, " No TA Main address \n");
+	                 return -2;
+	    };
+	return 0;
+}
+
+int setUnderVoltageAlarmDouble(double VoltageLimit) {
+	if (!IsInit) {
+		SPDLOG_LOGGER_TRACE(file_logger,"Schalter -> not initialized" );
+		value_s = 2; // Error code 2, Init failed
+		return -1;
+	}
+
+	    FISH_X1_TRANSFER *pTArea;
+	    pTArea = GetKeLibTransferAreaMainAddress();
+	    if (pTArea!= nullptr) {
+	    	while ((pTArea->sTxtInputs.u16TxtPower>0) & (!IsStop)) {
+	    	SupplyVoltage = (pTArea->sTxtInputs.u16TxtPower)*0.0009 + 1.5; // SupplyVoltage [V]
+			if(SupplyVoltage < VoltageLimit)
+				{  // TXT Supply Voltage below 7V -> Alarm
+					pTArea->sTxtOutputs.u16SoundIndex = 2; // Alarm!
+					pTArea->sTxtOutputs.u16SoundRepeat = 0; // 0x wiederholen
+					pTArea->sTxtOutputs.u16SoundCmdId++;
+					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			    	printf( "TXT Supply voltage below limit: %f \n", SupplyVoltage);
+				}
+	    	}
+	    	printf( "TXT Supply voltage: %f \n", SupplyVoltage);
+	    	}
+	    else {
+	                 //SPDLOG_LOGGER_TRACE(file_logger, " No TA Main address!\n");
+	                 //or
+	                 SPDLOG_LOGGER_TRACE(file_logger, " No TA Main address \n");
+	                 IsStop=true;
+	                 return -2;
+	    };
+	return 0;
+}
+
+
+
+
 int setValueShort(short data_Int16) {
 	if (!IsInit) {
 		SPDLOG_LOGGER_TRACE(file_logger,"Init16 -> SD-save not initialized" );
 		value_s = 2; // Error code 2, Init failed
 		return -1;
 	}
-	SPDLOG_LOGGER_TRACE(file_logger,data_Int16);  // Daten auf SD-Karte loggen
+	SPDLOG_LOGGER_TRACE(file_logger, data_Int16);  // Daten auf SD-Karte loggen
 	return 0;
 }
 
-/*!
- * @brief get a global double value from the SLI
- * @param[out] v the value of value_d
- * @return  0: success,continuation by the workflow
- *          Other values error, continuation by the error workflow
- */
-int getValueDouble(double *v) {
+// Provide TXT Supply Voltage to ROBOPro [V]
+int getSupplyVoltageDouble(double *TXTSupplyVoltage) {
 	 if (!IsInit) {
 		fprintf(stderr, "ExampleSLI:getValueDouble: Not initialized!\n");
 		return -1;
 	}
-	*v = value_d;
-	printf("****ExampleSLI:getValueDouble: %f\n", *v);
+	FISH_X1_TRANSFER *pTArea;
+	pTArea = GetKeLibTransferAreaMainAddress();
+	*TXTSupplyVoltage = (pTArea->sTxtInputs.u16TxtPower)*0.0009 + 1.5; // SupplyVoltage [V];
 	return 0;
 }
 /*!
@@ -220,7 +310,7 @@ int getValueDouble(double *v) {
  */
 int getValueShort(short *v) {
 	if (!IsInit) {
-		fprintf(stderr, "ExampleSLI:getValueShort: Not initialized!\n");
+		fprintf(stderr, "Status reporting: Not initialized!\n");
 		value_s = 2;  // Init failed
 		return -1;
 	} else
